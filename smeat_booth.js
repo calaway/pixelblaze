@@ -2,14 +2,18 @@ export function beforeRender(delta) {
   t1 = time(.05)
 }
 
-// 38x26
 var length = 38
-var width = (pixelCount/2) - length
+var width = 26
 
-function mirrorSymetry(index, offset) {
-  index = mod(index - offset, pixelCount)
+// 38x26
+
+function offset(index, pixels) {
+  index = mod(index - pixels, pixelCount)
+  return index
+}
+
+function mirrorSymetry(index) {
   index = triangle(index/pixelCount) * pixelCount
-
   return index
 }
 
@@ -27,13 +31,29 @@ function diagonalSymetry(index) {
   return index
 }
 
-export function render(index) {
-  offset = pixelCount * 2/8
-  // index = mirrorSymetry(index, 0)
-  index = diagonalSymetry(index)
+function diagonalSymetry2(xIn, ratio) {
+  xIn = mod(xIn, 1)
+  sideA = ratio/(2*ratio + 2)
+  if (xIn < sideA) {
+    xOut = xIn*(ratio + 1)/ratio
+  } else if (xIn < 1/2) {
+    xOut = xIn*(ratio + 1) - ratio/2 - 3/2
+  } else if (xIn < 1/2 + sideA) {
+    xOut = 1 - ((xIn - 1/2)*(ratio + 1)/ratio)
+  } else {
+    xOut = 1 - ((xIn - 1/2)*(ratio + 1) - ratio/2 - 3/2)
+  }
+  
+  return xOut
+}
 
-  h = index/pixelCount
+export function render(index) {
+  index = offset(index, length)
+  // index = mirrorSymetry(index)
+  index = diagonalSymetry2(index/pixelCount, width/length) * pixelCount
+
+  h = index/pixelCount + t1
   s = 1
   v = mod(index/pixelCount - t1, 1) < 24/pixelCount
-  hsv(h, s, v)
+  hsv(h, s, 1)
 }
